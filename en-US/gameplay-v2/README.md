@@ -12,8 +12,8 @@ Design Document.
 
 Gameplay V2 aims to be much more flexible than V1 in UI. The UI arrangement will be specified in a `skin.yml` file. This can come from the following sources (the foremost taking highest priority):
 
-* UI provided in the mod chart
-* Depending on the type:
+* UI provided in the mod chart. This is a separate `skin.yml` file under the map's folder.
+* Depending on the type: (these lies in the game's `Skins` directories)
   * Tournament: tournament skin
   * Normal gameplay: player-configured custom skin
 
@@ -24,29 +24,30 @@ Options:
 
 ```yaml
 
-FormatVersion: {Version}
+FormatVersion: 2
 Screens:
   Gameplay:
     OverrideOptions:
-      - Type: IgnorePlayer (overwrite the entire config with the config in this file) | Normal (simply override configs)
+      - Type: IgnorePlayer (overwrite the entire config with the config in this file) | Merge (simply override configs)
     Layers:
-      // Top and Bottom are reserved names
-      // Lists from top to bottom
+      # Top, Playfield and Bottom are reserved names
+      # Lists from top to bottom
       - HUD
       - Playfield
       - Background
     Layout:
       - !Image
-        Name: stage // optional name
-        Layer: Playfield // required for top-level elements
-        X: 123px | 12vw | 12vh | 12%
+        Name: stage # optional name
+        Layer: Playfield #required for top-level elements
+        X: 123px | 12% (relative to parent size)
         Y: ditto
         Width: ditto
         Height: ditto
-        Anchor: (0, 0) to (1, 1) | TopLeft, Center, etc. // anchors X and Y
-        Origin: (0, 0) to (1, 1) | TopLeft, Center, etc. // determines center
+        Anchor: (0, 0) to (1, 1) | TopLeft, Center, etc. # anchors X and Y
+        Origin: (0, 0) to (1, 1) | TopLeft, Center, etc. # determines center
         Rotation: 90deg
-        ImagePath: image.png // exclusive to Image
+        HUD: True # If 'Hide Gameplay Overlay' is on, should this be hidden
+        ImagePath: image.png # exclusive to Image
         Children:
           - ...
       ...
@@ -54,15 +55,24 @@ Screens:
 
 ```
 
+### Validation
+
+Layout:
+
+* The Tagged `Type` should always refer to an existing and acceptable type.
+* Paths to images and animatable images must exist and be relative to the map directory. It is *not* allowed to address any path outside of the map folder. Paths like `../image.png`, `/dev/zero`, etc. is *not* allowed.
+* Names must consist of one or more of alphabetic letters (`a-z` and `A-Z`), digits `0-9`, `-`, `$` or `_`.
+* Names must be unique. 
+
 ### Layout
 
 
 
 #### Layer
 
-The UI is split into layers. The layers of the UI elements indicate their draw order. UI elements are drawn from bottom layer to top. If there are multiple UI elements attached to a single layer as root, the relative draw order amongst them is not deterministic.
+The UI is split into layers. The layers of the UI elements indicate their draw order. UI elements are drawn from bottom layer to top. If there are multiple UI elements attached to a single layer as root, the order in which the elements are declared in the config will be the order of drawing, i.e. If two top-level elements are declared with the same attached layer, the element declared first will be drawn first.
 
-
+The layers `Top` and `Bottom` are always declared implicitly. `Top` is placed before the first declared layer and `Bottom` after the last. They can also be referred to in layout declaration.
 
 ### Size
 
